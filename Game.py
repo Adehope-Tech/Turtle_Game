@@ -1,29 +1,70 @@
+import tkinter as tk
 import random
 
-print("--- Welcome to 'Guess the Number' ---")
-secret_number = random.randint(1, 20)
-print("I'm thinking of a number between 1 and 20. You have 5 guesses.")
+class GuessingGame:
+    def __init__(self, master):
+        self.master = master
+        master.title("Guess the Number")
+        master.geometry("300x150")
 
-guess = 0
-guess_count = 0
-guess_limit = 5
-out_of_guesses = False
+        self.secret_number = random.randint(1, 100)
+        self.guess_count = 0
+        self.guess_limit = 7
 
-while guess != secret_number and not out_of_guesses:
-    if guess_count < guess_limit:
+        self.label = tk.Label(master, text="Guess a number between 1 and 100:")
+        self.label.pack()
+
+        self.entry = tk.Entry(master)
+        self.entry.pack()
+
+        self.guess_button = tk.Button(master, text="Guess", command=self.check_guess)
+        self.guess_button.pack()
+
+        self.feedback = tk.Label(master, text="")
+        self.feedback.pack()
+
+        self.reset_button = tk.Button(master, text="Reset", command=self.reset_game, state=tk.DISABLED)
+        self.reset_button.pack()
+
+    def check_guess(self):
         try:
-            guess = int(input("Take a guess: "))
-            guess_count += 1
-            if guess < secret_number:
-                print("Too low!")
-            elif guess > secret_number:
-                print("Too high!")
-        except ValueError:
-            print("Please enter a valid number.")
-    else:
-        out_of_guesses = True
+            guess = int(self.entry.get())
+            self.guess_count += 1
 
-if out_of_guesses:
-    print(f"You're out of guesses! The number was {secret_number}.")
-else:
-    print(f"You got it in {guess_count} guesses! The number was {secret_number}.")
+            if guess < self.secret_number:
+                self.feedback.config(text=f"Too low! Guesses left: {self.guess_limit - self.guess_count}")
+            elif guess > self.secret_number:
+                self.feedback.config(text=f"Too high! Guesses left: {self.guess_limit - self.guess_count}")
+            else:
+                self.feedback.config(text=f"You got it in {self.guess_count} guesses!")
+                self.end_game()
+                return
+
+            if self.guess_count >= self.guess_limit:
+                self.feedback.config(text=f"Out of guesses! Number was {self.secret_number}")
+                self.end_game()
+
+        except ValueError:
+            self.feedback.config(text="Please enter a valid number.")
+
+        self.entry.delete(0, tk.END) # Clear the entry box
+
+    def end_game(self):
+        self.guess_button.config(state=tk.DISABLED)
+        self.entry.config(state=tk.DISABLED)
+        self.reset_button.config(state=tk.NORMAL)
+
+    def reset_game(self):
+        self.secret_number = random.randint(1, 100)
+        self.guess_count = 0
+        self.feedback.config(text="")
+        self.guess_button.config(state=tk.NORMAL)
+        self.entry.config(state=tk.NORMAL)
+        self.entry.delete(0, tk.END)
+        self.reset_button.config(state=tk.DISABLED)
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    game = GuessingGame(root)
+    root.mainloop()
